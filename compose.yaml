@@ -1,0 +1,60 @@
+services:
+  servidor:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+      args:
+        HOST_UID: ${HOST_UID:-1000}
+        HOST_GID: ${HOST_GID:-1000}
+    container_name: proyectofinal_laravel
+    ports:
+      - "127.0.0.1:8085:80"
+      - "127.0.0.1:5175:5173"
+    volumes:
+      - ./www:/var/www/html
+      - proyectofinal_vendor:/var/www/html/vendor
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  db:
+    image: postgres:17
+    container_name: proyectofinal_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: root123
+      POSTGRES_DB: proyecto_final
+      TZ: America/El_Salvador
+    ports:
+      - "127.0.0.1:5435:5432"
+    volumes:
+      - proyectofinal_postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d proyecto_final"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: proyectofinal_pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin123
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    ports:
+      - "127.0.0.1:8088:80"
+    volumes:
+      - proyectofinal_pgadmin_data:/var/lib/pgadmin
+      - ./docker/pgadmin/servers.json:/pgadmin4/servers.json:ro
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  proyectofinal_postgres_data:
+  proyectofinal_pgadmin_data:
+  proyectofinal_vendor:

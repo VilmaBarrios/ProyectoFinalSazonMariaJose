@@ -1,0 +1,8 @@
+﻿/www/.env
+/www/vendor/
+/www/node_modules/
+/www/public/hot
+/www/public/storage
+/www/storage/*.key
+.DS_Store
+Thumbs.db
